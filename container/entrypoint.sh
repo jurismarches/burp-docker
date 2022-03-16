@@ -1,24 +1,12 @@
 #!/bin/bash
 
-SSL_KEY_RANDOM_PASS=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
-APPSECRET_RANDOM_PASS=$(date +%s | sha256sum | base64 | head -c 32 ; echo)
 NOTIFY_EMAIL=${NOTIFY_EMAIL:-youremail@example.com}
 SMTP_PORT=${SMTP_PORT:-25}
-
-# configure postfix
-postconf -e 'inet_protocols = ipv4'
-postconf -e 'inet_interfaces = all'
 
 if [[ -z $(ls -A /etc/burp) ]]; then
 	cd /etc/burp-source && make install-configs
 	cp /etc/burp/burp-server.conf /etc/burp/burp-server.conf.template
 fi
-
-# ssmtp
-sed -i "s/^mailhub=mail/mailhub=${SMTP_RELAY}:${SMTP_PORT}/" /etc/ssmtp/ssmtp.conf
-sed -i "s/^#FromLineOverride=YES/FromLineOverride=YES/" /etc/ssmtp/ssmtp.conf
-echo "AuthUser=${SMTP_USER}" >> /etc/ssmtp/ssmtp.conf
-echo "AuthPass=${SMTP_PASSWORD}" >> /etc/ssmtp/ssmtp.conf
 
 # start with clean config files
 cp -f /etc/burp/burp-server.conf.template /etc/burp/burp-server.conf
